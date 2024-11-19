@@ -37,6 +37,7 @@ import pickle
 from bs4 import BeautifulSoup
 from datetime import datetime
 from dateutil.parser import parse
+from pip._internal.locations import USER_CACHE_DIR as user_cache_dir
 
 # Including generic User-Agent http header to make us look like a browser
 HEADERS = {'User-Agent': 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/67.0.3396.87 Safari/537.36'}
