@@ -89,7 +89,7 @@ if __name__ == "__main__":
   # To use arguments parsed here call 'args.<argument>'
   args=parser.parse_args()
 
-  datadir = "/var/dbr"
+  datadir = user_cache_dir.replace("/.cache/pip", "/.cache/dbr")
 
   if os.path.exists(datadir):
     ##Do Stuff
