@@ -10,3 +10,9 @@ def info(txt):
   print(f"{txt_blue}[INFO]{txt_white} {txt}")
 def warn(txt):
   print(f"{txt_red}[WARN]{txt_white} {txt}")
+def blue(txt):
+  print(f"{txt_blue}{txt_white} {txt}")
+def red(txt):
+  print(f"{txt_red}{txt_white} {txt}")
+def green(txt):
+  print(f"{txt_green}{txt_white} {txt}")
