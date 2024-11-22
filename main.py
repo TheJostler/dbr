@@ -99,7 +99,7 @@ class gem:
     with open("gemStore", 'a') as f:
       f.write(f"={self.scripture}=\n")
       for i, a in enumerate(self.answers):
-        f.write(f"{self.questions[i]}: {a}\n")
+        f.write(f"{self.questions[i]}: {a}\n\n")
 
 def process(html):
   ## Here we use Beautiful Soup to extract the parts we care about
@@ -176,11 +176,11 @@ if __name__ == "__main__":
   verse_num = random.randint(1, random_book[book_name][chapter_num-1])
 
   this_scripture = f"{random_book_number:02d}{chapter_num:03d}{verse_num:03d}"
-  this_scripture_book_name = next(iter(random_book.keys()))
+  this_scripture_readable = f"{book_name} {chapter_num}:{verse_num}"
   print(f"Random verse: https://jw.org/finder?bible={this_scripture}")
 
   print(f"{random_book}")
-  thisgem = gem(this_scripture, "Scripture text")
+  thisgem = gem(this_scripture_readable, "Scripture text")
   answers = thisgem.extract()
   thisgem.show()
   thisgem.save()
