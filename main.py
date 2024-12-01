@@ -35,12 +35,12 @@ import random
 import gzip
 import pickle
 from bs4 import BeautifulSoup
-from datetime import datetime
-from dateutil.parser import parse
 from pip._internal.locations import USER_CACHE_DIR as user_cache_dir
 
 # Including generic User-Agent http header to make us look like a browser
 HEADERS = {'User-Agent': 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/67.0.3396.87 Safari/537.36'}
+
+datadir = user_cache_dir.replace("/.cache/pip", "/.cache/dbr")
 
 class bibleStruct:
   def __init__(self):
@@ -50,14 +50,14 @@ class bibleStruct:
     self = self.loadBibleStruct()
 
   def loadBibleStruct(self):
-    if not os.path.exists("bible.pkl.gz"):
+    if not os.path.exists(f"{datadir}/bible.pkl.gz"):
       with open("bibleStructure.yml") as f:
         self.list = yaml.safe_load(f)
         self.n_books = len(self.list)
-      with gzip.open("bible.pkl.gz", "wb") as f:
+      with gzip.open(f"{datadir}/bible.pkl.gz", "wb") as f:
         pickle.dump(self, f)
     else:
-      with gzip.open("bible.pkl.gz", "rb") as f:
+      with gzip.open(f"{datadir}/bible.pkl.gz", "rb") as f:
         temp = pickle.load(f)
         self.n_books = temp.n_books
         self.list = temp.list
@@ -71,8 +71,9 @@ class bibleStruct:
     print(f"Total Verses catalogued {self.total_verses}")
 
 class gem:
-  def __init__(self, scripture, text):
+  def __init__(self, scripture, scriptureCode, text):
     self.scripture = scripture
+    self.scriptureCode = scriptureCode
     self.text = text
     self.questions = [
       "What is this verse describing?",
@@ -84,11 +85,14 @@ class gem:
     self.answers = []
 
   def extract(self):
-    print(f"Here is the scripture")
+    print("----- Here is the scripture -----")
     logz.green(self.text)
     logz.blue(self.scripture)
-    for q in self.questions:
-      self.answers.append(input(f"{q}: "))
+    print("---------------------------------")
+    print("Processing the information:")
+    qs = len(self.questions)
+    for i, q in enumerate(self.questions):
+      self.answers.append(input(f"{i+1}/{qs}. {q}: "))
     return list(zip(self.questions, self.answers))
   
   def show(self):
@@ -96,10 +100,14 @@ class gem:
       print(f"{self.questions[i]}: {a}")
 
   def save(self):
-    with open("gemStore", 'a') as f:
+    with open(f"{datadir}/gemStore", 'a') as f:
       f.write(f"={self.scripture}=\n")
+      f.write(f"-{self.scriptureCode}-\n")
       for i, a in enumerate(self.answers):
         f.write(f"{self.questions[i]}: {a}\n\n")
+      if input("Would like to save this goal?(y) - ") == 'y':
+        with open(f"{datadir}/goal", "w") as g:
+          g.write(f"Current Goal: {self.answers[len(self.questions)-1]}\n")
 
 def process(html):
   ## Here we use Beautiful Soup to extract the parts we care about
@@ -146,8 +154,6 @@ if __name__ == "__main__":
   # To use arguments parsed here call 'args.<argument>'
   args=parser.parse_args()
 
-  datadir = user_cache_dir.replace("/.cache/pip", "/.cache/dbr")
-
   if not os.path.exists(datadir):
     # Make the Cache directory
     if args.verbose: print(f"Creating Data directory at: {datadir}")
@@ -161,7 +167,8 @@ if __name__ == "__main__":
       print("Try ")
 
   bstruct = bibleStruct()
-  bstruct.info()
+  ## This function can show you statistical information about the Bible Books
+  #bstruct.info()
 
   # First, randomly select a book
   books = bstruct.list
@@ -175,12 +182,11 @@ if __name__ == "__main__":
   # Finally, randomly select a verse from that chapter
   verse_num = random.randint(1, random_book[book_name][chapter_num-1])
 
-  this_scripture = f"{random_book_number:02d}{chapter_num:03d}{verse_num:03d}"
-  this_scripture_readable = f"{book_name} {chapter_num}:{verse_num}"
-  print(f"Random verse: https://jw.org/finder?bible={this_scripture}")
+  this_scripture = f"{book_name} {chapter_num}:{verse_num}"
+  this_scripture_code = f"{random_book_number:02d}{chapter_num:03d}{verse_num:03d}"
+  print(f"Random verse: https://jw.org/finder?bible={this_scripture_code}")
 
-  print(f"{random_book}")
-  thisgem = gem(this_scripture_readable, "Scripture text")
+  thisgem = gem(this_scripture, this_scripture_code, "Scripture text")
   answers = thisgem.extract()
   thisgem.show()
   thisgem.save()
